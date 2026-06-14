@@ -1,0 +1,10 @@
+[project]
+name = "hackathon"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "band-sdk[langgraph]>=1.0.0",
+    "flask>=3.1.3",
+]
