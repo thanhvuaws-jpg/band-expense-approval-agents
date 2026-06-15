@@ -44,12 +44,15 @@ from tools import (
 load_dotenv()
 db.init_db()
 
-AIML_BASE_URL = "https://api.aimlapi.com/v1"
-AIML_MODEL = "gpt-4o"
+AIML_BASE_URL       = "https://api.aimlapi.com/v1"
+AIML_MODEL          = "gpt-4o"
 
-BUDGET_CHECKER_HANDLE  = "@2431540219/budget-checker"
-POLICY_CHECKER_HANDLE  = "@2431540219/policychecker"
-RISK_EVALUATOR_HANDLE  = "@2431540219/risk-evaluator"
+FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+FEATHERLESS_MODEL    = "meta-llama/Meta-Llama-3.1-70B-Instruct"
+
+BUDGET_CHECKER_HANDLE    = "@2431540219/budget-checker"
+POLICY_CHECKER_HANDLE    = "@2431540219/policychecker"
+RISK_EVALUATOR_HANDLE    = "@2431540219/risk-evaluator"
 APPROVAL_NOTIFIER_HANDLE = "@2431540219/approval-notifier"
 
 
@@ -58,6 +61,15 @@ def make_llm() -> ChatOpenAI:
         model=AIML_MODEL,
         api_key=os.environ["AIML_API_KEY"],
         base_url=AIML_BASE_URL,
+        temperature=0.1,
+    )
+
+
+def make_featherless_llm() -> ChatOpenAI:
+    return ChatOpenAI(
+        model=FEATHERLESS_MODEL,
+        api_key=os.environ["FEATHERLESS_API_KEY"],
+        base_url=FEATHERLESS_BASE_URL,
         temperature=0.1,
     )
 
@@ -155,7 +167,7 @@ Review Flags:    [list or "None"]
 
 policy_checker = Agent.create(
     adapter=LangGraphAdapter(
-        llm=make_llm(),
+        llm=make_featherless_llm(),
         checkpointer=InMemorySaver(),
         custom_section=POLICY_CHECKER_PROMPT,
         additional_tools=[
@@ -205,7 +217,7 @@ If CFO-REVIEW → add: "🚨 CFO ESCALATION. Approve: {APPROVAL_NOTIFIER_HANDLE}
 
 risk_evaluator = Agent.create(
     adapter=LangGraphAdapter(
-        llm=make_llm(),
+        llm=make_featherless_llm(),
         checkpointer=InMemorySaver(),
         custom_section=RISK_EVALUATOR_PROMPT,
         additional_tools=[
