@@ -172,7 +172,6 @@ policy_checker = Agent.create(
         custom_section=POLICY_CHECKER_PROMPT,
         additional_tools=[
             check_policy_compliance,
-            get_expense_details,
             log_agent_action,
         ],
         features=AdapterFeatures(emit={Emit.EXECUTION}),
