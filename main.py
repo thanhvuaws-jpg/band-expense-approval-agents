@@ -217,7 +217,7 @@ If CFO-REVIEW → add: "🚨 CFO ESCALATION. Approve: {APPROVAL_NOTIFIER_HANDLE}
 
 risk_evaluator = Agent.create(
     adapter=LangGraphAdapter(
-        llm=make_featherless_llm(),
+        llm=make_llm(),
         checkpointer=InMemorySaver(),
         custom_section=RISK_EVALUATOR_PROMPT,
         additional_tools=[
