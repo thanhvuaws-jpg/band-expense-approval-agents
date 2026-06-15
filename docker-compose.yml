@@ -1,0 +1,27 @@
+services:
+  agents:
+    build: .
+    command: python main.py
+    env_file: .env
+    volumes:
+      - db_data:/data
+    environment:
+      - DB_PATH=/data/database.db
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    command: python dashboard.py
+    env_file: .env
+    volumes:
+      - db_data:/data
+    environment:
+      - DB_PATH=/data/database.db
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    depends_on:
+      - agents
+
+volumes:
+  db_data:

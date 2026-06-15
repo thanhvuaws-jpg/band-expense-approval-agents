@@ -1,11 +1,12 @@
 """SQLite database layer for Expense Approval System."""
 
+import os
 import sqlite3
 import uuid
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "database.db"
+DB_PATH = Path(os.environ.get("DB_PATH", Path(__file__).parent / "database.db"))
 
 DEPARTMENTS = {
     "Engineering": (10000, 8500),
