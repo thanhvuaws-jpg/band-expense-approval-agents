@@ -110,6 +110,21 @@ def deduct_budget(department: str, amount: float) -> bool:
     return True
 
 
+def reset_budget(department: str) -> bool:
+    with _conn() as conn:
+        conn.execute(
+            "UPDATE budgets SET remaining = monthly_limit WHERE department = ?",
+            (department,),
+        )
+    return True
+
+
+def reset_all_budgets() -> bool:
+    with _conn() as conn:
+        conn.execute("UPDATE budgets SET remaining = monthly_limit")
+    return True
+
+
 # ── Expenses ──────────────────────────────────────────────────────────────────
 
 def create_expense(
