@@ -23,5 +23,19 @@ services:
     depends_on:
       - agents
 
+  admin:
+    build: .
+    command: python admin.py
+    env_file: .env
+    volumes:
+      - db_data:/data
+    environment:
+      - DB_PATH=/data/database.db
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+    depends_on:
+      - agents
+
 volumes:
   db_data:
