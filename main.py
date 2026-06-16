@@ -151,14 +151,7 @@ STEP 1: Call check_policy_compliance with expense_type, amount, description, ven
 
 STEP 2: Call band_send_message ONCE with:
   mentions: ["{RISK_EVALUATOR_HANDLE}"]
-  content (use this exact template, fill in brackets):
-
----POLICY CHECK---
-Expense ID: [ID]
-Policy Status: [COMPLIANT / CONDITIONAL / NON-COMPLIANT]
-Blocking Issues: [issues or None]
-Review Flags: [flags or None]
----END POLICY CHECK---
+  content: "POLICY CHECK | Expense ID: [ID] | Status: [COMPLIANT or CONDITIONAL or NON-COMPLIANT] | Blocking: [issues or None] | Flags: [flags or None]"
 """
 
 policy_checker = Agent.create(
