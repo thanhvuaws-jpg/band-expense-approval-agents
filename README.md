@@ -1,64 +1,68 @@
-# AI-Powered Expense Approval System
+# 🤖 AI-Powered Expense Approval System
 
 > **Band of Agents Hackathon 2026 — Track 1: Internal Enterprise Workflows**
 
-Hệ thống duyệt chi phí doanh nghiệp tự động, sử dụng 4 AI agent chuyên biệt phối hợp qua Band. Pipeline xử lý từ đầu đến cuối — kiểm tra ngân sách, compliance, đánh giá rủi ro, và ra quyết định cuối cùng — chỉ leo thang đến con người khi thực sự cần thiết.
+Hệ thống duyệt chi phí doanh nghiệp tự động, sử dụng 4 AI agent chuyên biệt phối hợp qua Band.  
+*An automated enterprise expense approval system powered by 4 specialized AI agents collaborating through Band.*
 
-An enterprise expense approval system powered by 4 specialized AI agents collaborating through Band. The pipeline handles everything end-to-end — budget validation, compliance checking, risk evaluation, and final decisions — escalating to humans only when genuinely necessary.
-
----
-
-## Mục lục / Table of Contents
-
-- [Vấn đề & Giải pháp](#1-vấn-đề--giải-pháp)
-- [Tác nhân sử dụng](#2-tác-nhân-sử-dụng--stakeholders)
-- [Kiến trúc hệ thống](#3-kiến-trúc-hệ-thống--architecture)
-- [Sơ đồ luồng xử lý](#4-sơ-đồ-luồng-xử-lý--flow-diagrams)
-- [Chi tiết 4 AI Agent](#5-chi-tiết-4-ai-agent)
-- [Human-in-the-Loop](#6-human-in-the-loop)
-- [Tech Stack](#7-tech-stack)
-- [Cài đặt & Chạy](#8-cài-đặt--chạy--setup--running)
-- [Demo Scenarios](#9-demo-scenarios)
-- [Scale lên Enterprise](#10-scale-lên-enterprise)
-- [Cấu trúc Project](#11-cấu-trúc-project)
+Pipeline xử lý từ đầu đến cuối — kiểm tra ngân sách, compliance, đánh giá rủi ro, và ra quyết định cuối cùng — chỉ leo thang đến con người khi thực sự cần thiết.  
+*The pipeline handles everything end-to-end — budget validation, compliance checking, risk evaluation, and final decisions — escalating to humans only when genuinely necessary.*
 
 ---
 
-## 1. Vấn đề & Giải pháp
+## 📋 Mục lục / Table of Contents
 
-### Vấn đề thực tế
+1. [Vấn đề & Giải pháp / Problem & Solution](#1-vấn-đề--giải-pháp--problem--solution)
+2. [Tác nhân sử dụng / Stakeholders](#2-tác-nhân-sử-dụng--stakeholders)
+3. [Kiến trúc hệ thống / Architecture](#3-kiến-trúc-hệ-thống--architecture)
+4. [Sơ đồ luồng xử lý / Flow Diagrams](#4-sơ-đồ-luồng-xử-lý--flow-diagrams)
+5. [Chi tiết 4 AI Agent / Agent Details](#5-chi-tiết-4-ai-agent--agent-details)
+6. [Human-in-the-Loop](#6-human-in-the-loop)
+7. [Tech Stack](#7-tech-stack)
+8. [Cài đặt & Chạy / Setup & Running](#8-cài-đặt--chạy--setup--running)
+9. [Demo Scenarios](#9-demo-scenarios)
+10. [Scale lên Enterprise / Enterprise Scaling](#10-scale-lên-enterprise--enterprise-scaling)
+11. [Cấu trúc Project / Project Structure](#11-cấu-trúc-project--project-structure)
 
-Trong doanh nghiệp, quy trình duyệt chi phí thủ công gặp nhiều bất cập:
+---
 
-- Mất **2–3 ngày** xử lý mỗi yêu cầu do phải chuyền tay qua nhiều phòng ban
-- Manager phải duyệt **cả những khoản nhỏ** không cần thiết, lãng phí thời gian
-- Dễ **sai sót**: nhầm ngân sách, bỏ qua quy định policy
-- Không có **audit trail** rõ ràng khi xảy ra tranh chấp
-- Không có **cảnh báo sớm** khi ngân sách sắp cạn
+## 1. Vấn đề & Giải pháp / Problem & Solution
 
-### Giải pháp
+### 🔴 Vấn đề thực tế / The Problem
 
-4 AI agent chuyên biệt phối hợp tự động qua Band:
+Trong doanh nghiệp, quy trình duyệt chi phí thủ công gặp nhiều bất cập:  
+*In enterprises, manual expense approval processes face many pain points:*
 
-| Trước (Thủ công) | Sau (AI Agent) |
+- Mất **2–3 ngày** xử lý mỗi yêu cầu do phải chuyền tay qua nhiều phòng ban *(2–3 days to process each request due to handoffs across departments)*
+- Manager phải duyệt **cả những khoản nhỏ** không cần thiết, lãng phí thời gian *(Managers must approve even small, low-risk expenses — wasting their time)*
+- Dễ **sai sót**: nhầm ngân sách, bỏ qua quy định policy *(Human error: wrong budget allocation, overlooked policy rules)*
+- Không có **audit trail** rõ ràng khi xảy ra tranh chấp *(No clear audit trail when disputes arise)*
+- Không có **cảnh báo sớm** khi ngân sách sắp cạn *(No early warning when budgets are nearly exhausted)*
+
+### 🟢 Giải pháp / The Solution
+
+4 AI agent chuyên biệt phối hợp tự động qua Band:  
+*4 specialized AI agents collaborating automatically through Band:*
+
+| Trước — Thủ công / Before (Manual) | Sau — AI Agent / After (AI Agent) |
 |---|---|
-| 2–3 ngày xử lý | ~30 giây (LOW risk) |
-| Manager duyệt tất cả | Chỉ leo thang khi cần |
-| Dễ quên quy định | Policy check tự động 100% |
-| Không có audit trail | Mọi hành động đều được ghi lại |
-| Không biết ngân sách còn bao nhiêu | Real-time budget tracking |
+| ⏳ 2–3 ngày xử lý / 2–3 days to process | ⚡ ~30 giây (LOW risk) / ~30 seconds |
+| 👤 Manager duyệt tất cả / Manager approves everything | 🤖 Chỉ leo thang khi cần / Escalates only when needed |
+| ❌ Dễ quên quy định / Easy to miss policy rules | ✅ Policy check tự động 100% / Fully automated policy checks |
+| 📭 Không có audit trail / No audit trail | 📋 Mọi hành động đều được ghi lại / Every action is logged |
+| ❓ Không biết ngân sách còn bao nhiêu / Unknown budget balance | 📊 Real-time budget tracking |
 
 ---
 
 ## 2. Tác nhân sử dụng / Stakeholders
 
-| Tác Nhân | Vai Trò | Công Cụ | Tần Suất |
+| Tác Nhân / Stakeholder | Vai Trò / Role | Công Cụ / Tool | Tần Suất / Frequency |
 |---|---|---|---|
-| **Nhân viên** | Gửi yêu cầu chi phí, theo dõi kết quả | Web Dashboard | Hàng ngày |
-| **Manager** | Duyệt/từ chối chi phí rủi ro MEDIUM | Band | Khi có thông báo |
-| **CFO** | Duyệt/từ chối chi phí rủi ro HIGH (>$1,500) | Band | Khi có leo thang |
-| **IT Admin** | Cài đặt và vận hành hệ thống | VPS + Docker | Setup 1 lần |
-| **4 AI Agents** | Xử lý pipeline tự động 24/7 | Band SDK + LLM | Tức thì |
+| 👨‍💼 **Nhân viên** / *Employee* | Gửi yêu cầu chi phí, theo dõi kết quả / *Submit expense requests, track results* | Web Dashboard | Hàng ngày / *Daily* |
+| 👔 **Manager** | Duyệt/từ chối chi phí MEDIUM risk / *Approve/reject MEDIUM risk expenses* | Band | Khi có thông báo / *On notification* |
+| 💼 **CFO** | Duyệt/từ chối chi phí HIGH risk (>$1,500) / *Approve/reject HIGH risk expenses* | Band | Khi có leo thang / *On escalation* |
+| 🔧 **IT Admin** | Cài đặt và vận hành hệ thống / *Install and operate the system* | VPS + Docker | Setup 1 lần / *One-time setup* |
+| 🤖 **4 AI Agents** | Xử lý pipeline tự động 24/7 / *Automated 24/7 pipeline processing* | Band SDK + LLM | Tức thì / *Instant* |
 
 ---
 
@@ -66,149 +70,133 @@ Trong doanh nghiệp, quy trình duyệt chi phí thủ công gặp nhiều bấ
 
 ### 3-Layer Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                       PRESENTATION LAYER                            │
-│                                                                     │
-│   ┌─────────────────────┐          ┌──────────────────────────┐    │
-│   │    Web Dashboard     │          │        Band App           │    │
-│   │  (Nhân viên submit) │          │  (Manager / CFO duyệt)   │    │
-│   │   http://server:5000│          │    gõ APPROVE / REJECT    │    │
-│   └──────────┬──────────┘          └─────────────┬────────────┘    │
-└──────────────┼─────────────────────────────────────┼────────────────┘
-               │ HTTP POST                           │ WebSocket
-┌──────────────▼─────────────────────────────────────▼────────────────┐
-│                        AI AGENT LAYER                               │
-│                                                                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────┐ │
-│  │   Budget     │  │   Policy     │  │    Risk      │  │Approval│ │
-│  │   Checker    │─▶│   Checker    │─▶│  Evaluator   │─▶│Notifier│ │
-│  │  [GPT-4o]    │  │[Llama 3.1]  │  │  [GPT-4o]    │  │[GPT-4o]│ │
-│  │  AIML API    │  │ Featherless  │  │  AIML API    │  │AIML API│ │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └────────┘ │
-│                                                                     │
-│                  Band SDK + LangGraph ReAct Loop                   │
-└─────────────────────────────────┬───────────────────────────────────┘
-                                  │ SQLite / PostgreSQL
-┌─────────────────────────────────▼───────────────────────────────────┐
-│                          DATA LAYER                                 │
-│                                                                     │
-│    budgets  │  expenses  │  audit_log  │  pending_sends             │
-│   (ngân sách) (chi phí)  (nhật ký)    (queue web→Band)             │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph PRESENTATION["🖥️ PRESENTATION LAYER"]
+        WEB["Web Dashboard<br/>Nhân viên submit<br/>http://server:5000"]
+        BAND_APP["Band App<br/>Manager / CFO duyệt<br/>gõ APPROVE / REJECT"]
+    end
+
+    subgraph AGENTS["🤖 AI AGENT LAYER"]
+        BC["Budget Checker<br/>Agent 1<br/>GPT-4o · AI/ML API"]
+        PC["Policy Checker<br/>Agent 2<br/>Llama 3.1 · Featherless"]
+        RE["Risk Evaluator<br/>Agent 3<br/>GPT-4o · AI/ML API"]
+        AN["Approval Notifier<br/>Agent 4<br/>GPT-4o · AI/ML API"]
+        BC --> PC --> RE --> AN
+    end
+
+    subgraph DATA["🗄️ DATA LAYER"]
+        DB["SQLite / PostgreSQL<br/>budgets · expenses · audit_log · pending_sends"]
+    end
+
+    WEB -->|HTTP POST| BC
+    BAND_APP <-->|WebSocket| AN
+    AGENTS <-->|Read / Write| DB
 ```
 
-### Agent Communication Flow
+### Agent Communication Flow / Luồng giao tiếp Agent
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                       BAND SHARED ROOM                           │
-│                                                                  │
-│   Nhân Viên ──────────────────────────────────────────────────  │
-│       │  @budget-checker $200 office supplies, HR dept          │
-│       │                                                          │
-│       ▼                                                          │
-│   Budget Checker [1]                                             │
-│       │  • Kiểm tra ngân sách Engineering: $2,500 còn lại       │
-│       │  • Tạo record EXP-XXXXXXXX trong SQLite                 │
-│       │  @policychecker ---BUDGET CHECK--- ...                   │
-│       │                                                          │
-│       ▼                                                          │
-│   Policy Checker [2]  (Featherless AI - Llama 3.1 70B)          │
-│       │  • Kiểm tra: software >$1000? travel >$500? CFO?        │
-│       │  • Kết quả: COMPLIANT / CONDITIONAL / NON-COMPLIANT     │
-│       │  @risk-evaluator POLICY CHECK | Status: COMPLIANT       │
-│       │                                                          │
-│       ▼                                                          │
-│   Risk Evaluator [3]                                             │
-│       │  • Đọc cả 2 báo cáo Budget + Policy                     │
-│       │  • Phân loại: LOW / MEDIUM / HIGH                        │
-│       │                                                          │
-│       ├── LOW ──────▶ @approval-notifier auto-approve EXP-XXX   │
-│       ├── MEDIUM ──▶ ⚠️ MANAGER REVIEW NEEDED                   │
-│       └── HIGH ────▶ 🚨 CFO ESCALATION                          │
-│                                                                  │
-│       ▼ (sau khi human APPROVE/REJECT)                           │
-│   Approval Notifier [4]                                          │
-│       │  • approve_expense → deduct budget                       │
-│       │  • Ghi audit trail                                       │
-│       └─▶ @NhânViên ✅ APPROVED / ❌ REJECTED                   │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
+```mermaid
+sequenceDiagram
+    participant NV as 👤 Nhân Viên
+    participant BC as 🤖 Budget Checker
+    participant PC as 🤖 Policy Checker
+    participant RE as 🤖 Risk Evaluator
+    participant AN as 🤖 Approval Notifier
+
+    NV->>BC: @budget-checker $200 office supplies, HR dept
+    BC->>BC: check_department_budget()
+    BC->>BC: create_expense_record() → EXP-XXXXXXXX
+    BC->>PC: ---BUDGET CHECK--- report
+    PC->>PC: check_policy_compliance()
+    PC->>RE: POLICY CHECK | Status: COMPLIANT
+    RE->>RE: get_expense_details()
+    RE->>AN: Route → LOW / MEDIUM / HIGH
+    AN->>AN: approve_expense() / reject_expense()
+    AN->>NV: ✅ APPROVED / ❌ REJECTED
 ```
 
 ---
 
 ## 4. Sơ đồ luồng xử lý / Flow Diagrams
 
-### 4.1 Sơ đồ tuần tự — LOW Risk ($200)
+### 4.1 LOW Risk — $200 ✅ (Auto-approved / Tự động duyệt ~30 giây)
 
-```
-NhânViên      BudgetChecker    PolicyChecker    RiskEvaluator    ApprovalNotifier
-    │               │                │                │                │
-    │─$200 req ────▶│                │                │                │
-    │               │─check_budget──▶                 │                │
-    │               │◀─OK $2,600 ───│                 │                │
-    │               │─create_expense▶                 │                │
-    │               │─@policychecker▶                 │                │
-    │               │                │─check_policy   │                │
-    │               │                │◀─COMPLIANT ────│                │
-    │               │                │─@risk-eval ──────────────────▶  │
-    │               │                │                │─get_expense     │
-    │               │                │                │◀─$200 OK ──────│
-    │               │                │                │─AUTO-APPROVE──▶ │
-    │               │                │                │                │─approve_expense
-    │               │                │                │                │─deduct_budget
-    │◀──────────────────────────────────────────── ✅ APPROVED ────────│
-    │  (~30 giây, không cần con người)                                  │
-```
+```mermaid
+sequenceDiagram
+    participant NV as 👤 Nhân Viên
+    participant BC as Agent 1<br/>Budget Checker
+    participant PC as Agent 2<br/>Policy Checker
+    participant RE as Agent 3<br/>Risk Evaluator
+    participant AN as Agent 4<br/>Approval Notifier
 
-### 4.2 Sơ đồ tuần tự — MEDIUM Risk ($800)
+    NV->>BC: $200 office supplies, HR dept
+    BC->>BC: Budget OK ✓ ($2,600 remaining)
+    BC->>PC: @policychecker — BUDGET CHECK
+    PC->>PC: COMPLIANT ✓ (no policy flags)
+    PC->>RE: @risk-evaluator — POLICY CHECK
+    RE->>RE: Risk = LOW (≤$500, COMPLIANT)
+    RE->>AN: @approval-notifier AUTO-APPROVE EXP-XXX
+    AN->>AN: approve_expense() + deduct_budget()
+    AN->>NV: ✅ APPROVED — $200 deducted from HR budget
 
-```
-NhânViên      BudgetChecker    PolicyChecker    RiskEvaluator    ApprovalNotifier   Manager
-    │               │                │                │                │               │
-    │─$800 req ────▶│                │                │                │               │
-    │               │─────────────── pipeline ───────▶                │               │
-    │               │                │                │─MANAGER-REVIEW▶               │
-    │               │                │                │                │─⚠️ MANAGER──▶ │
-    │               │                │                │                │               │
-    │               │                │                │                │◀─APPROVE ─────│
-    │               │                │                │                │─approve_db     │
-    │◀──────────────────────────────────────────── ✅ APPROVED ────────│               │
+    Note over NV,AN: ~30 giây · Không cần con người / No human needed
 ```
 
-### 4.3 Sơ đồ tuần tự — HIGH Risk ($6,000)
+### 4.2 MEDIUM Risk — $800 ⚠️ (Manager review)
 
+```mermaid
+sequenceDiagram
+    participant NV as 👤 Nhân Viên
+    participant PIPELINE as 🤖 Pipeline<br/>(Agents 1–3)
+    participant AN as Agent 4<br/>Approval Notifier
+    participant MGR as 👔 Manager
+
+    NV->>PIPELINE: $800 conference tickets, Marketing dept
+    PIPELINE->>PIPELINE: Budget OK · CONDITIONAL policy
+    PIPELINE->>AN: Route → MEDIUM RISK
+    AN->>MGR: ⚠️ MANAGER REVIEW NEEDED<br/>EXP-XXXXXX · $800 · Marketing
+    MGR->>AN: @approval-notifier APPROVE EXP-XXXXXX
+    AN->>AN: approve_expense() + deduct_budget()
+    AN->>NV: ✅ APPROVED by Manager
 ```
-NhânViên      BudgetChecker    PolicyChecker    RiskEvaluator    ApprovalNotifier    CFO
-    │               │                │                │                │               │
-    │─$6000 req────▶│                │                │                │               │
-    │               │─────────────── pipeline ───────▶                │               │
-    │               │                │─NON-COMPLIANT ▶                │               │
-    │               │                │                │─CFO-REVIEW ──▶ │               │
-    │               │                │                │                │─🚨 CFO ──────▶│
-    │               │                │                │                │               │
-    │               │                │                │                │◀─REJECT ──────│
-    │               │                │                │                │─reject_db      │
-    │◀──────────────────────────────────────────── ❌ REJECTED ────────│               │
+
+### 4.3 HIGH Risk — $6,000 🚨 (CFO escalation)
+
+```mermaid
+sequenceDiagram
+    participant NV as 👤 Nhân Viên
+    participant PIPELINE as 🤖 Pipeline<br/>(Agents 1–3)
+    participant AN as Agent 4<br/>Approval Notifier
+    participant CFO as 💼 CFO
+
+    NV->>PIPELINE: $6,000 SAP software license, Engineering dept
+    PIPELINE->>PIPELINE: Budget TIGHT · NON-COMPLIANT<br/>(>$5,000 needs CFO · software >$1,000 needs IT)
+    PIPELINE->>AN: Route → HIGH RISK
+    AN->>CFO: 🚨 CFO ESCALATION<br/>EXP-XXXXXX · $6,000 · Engineering
+    CFO->>AN: @approval-notifier REJECT EXP-XXXXXX budget not available this quarter
+    AN->>AN: reject_expense() + log audit trail
+    AN->>NV: ❌ REJECTED — budget not available this quarter
 ```
 
 ---
 
-## 5. Chi tiết 4 AI Agent
+## 5. Chi tiết 4 AI Agent / Agent Details
 
-### Agent 1 — Budget Checker
+### 🔵 Agent 1 — Budget Checker
+
 **Model:** GPT-4o via AI/ML API
 
-Điểm đầu vào của pipeline. Nhận yêu cầu bằng ngôn ngữ tự nhiên, phân tích, kiểm tra ngân sách, tạo database record.
+Điểm đầu vào của pipeline. Nhận yêu cầu bằng ngôn ngữ tự nhiên, phân tích, kiểm tra ngân sách, tạo database record.  
+*Pipeline entry point. Receives natural language requests, parses them, validates budget, and creates a database record.*
 
 | | |
 |---|---|
 | **Tools** | `create_expense_record`, `check_department_budget`, `log_agent_action` |
-| **Input** | Ngôn ngữ tự nhiên: `$800 AWS software, Engineering, vendor: Amazon` |
-| **Output** | Báo cáo có cấu trúc → gửi @policychecker qua Band |
+| **Input** | Natural language: `$800 AWS software, Engineering, vendor: Amazon` |
+| **Output** | Structured report → sent to `@policychecker` via Band |
 
+**Output format:**
 ```
 ---BUDGET CHECK---
 Expense ID:  EXP-A1B2C3D4
@@ -223,72 +211,83 @@ Budget Left: $6,900 (OK ✓)
 
 ---
 
-### Agent 2 — Policy Checker
+### 🟡 Agent 2 — Policy Checker
+
 **Model:** Llama 3.1 70B via Featherless AI
 
-Chuyên gia compliance độc lập. Kiểm tra các quy định nội bộ và gửi kết quả đến Risk Evaluator.
+Chuyên gia compliance độc lập. Kiểm tra các quy định nội bộ và gửi kết quả đến Risk Evaluator.  
+*An independent compliance expert. Validates internal policy rules and forwards results to the Risk Evaluator.*
 
 | | |
 |---|---|
 | **Tools** | `check_policy_compliance` |
-| **Input** | Budget Check report từ Band room |
-| **Output** | `POLICY CHECK | Expense ID: ... | Status: COMPLIANT | Blocking: None` |
+| **Input** | Budget Check report from Band room |
+| **Output** | `POLICY CHECK \| Expense ID: ... \| Status: COMPLIANT \| Blocking: None` |
 
-**Policy rules được kiểm tra:**
-- Software > $1,000 → cần IT pre-approval
-- Bất kỳ chi phí > $5,000 → cần CFO ký duyệt
-- Travel > $500 → cần báo trước 2 tuần
-- Hardware > $500 → cần theo dõi asset
-- Từ khoá bị cấm: `personal`, `gift`, `alcohol`, `entertainment`, `casino`
+**Policy rules checked / Các quy định được kiểm tra:**
+
+| Rule / Quy tắc | Condition / Điều kiện |
+|---|---|
+| Software approval | > $1,000 → cần IT pre-approval |
+| CFO sign-off | > $5,000 → cần CFO ký duyệt |
+| Travel notice | > $500 → cần báo trước 2 tuần |
+| Hardware tracking | > $500 → cần theo dõi asset |
+| Banned keywords | `personal`, `gift`, `alcohol`, `entertainment`, `casino` |
 
 ---
 
-### Agent 3 — Risk Evaluator
+### 🟠 Agent 3 — Risk Evaluator
+
 **Model:** GPT-4o via AI/ML API
 
-Bộ não ra quyết định. Đọc cả hai báo cáo từ lịch sử Band room và routing đến kết quả phù hợp.
+Bộ não ra quyết định. Đọc cả hai báo cáo từ lịch sử Band room và routing đến kết quả phù hợp.  
+*The decision-making brain. Reads both reports from Band room history and routes to the appropriate outcome.*
 
 | | |
 |---|---|
 | **Tools** | `get_expense_details` |
-| **Input** | Toàn bộ lịch sử Band room (Budget + Policy reports) |
+| **Input** | Full Band room history (Budget + Policy reports) |
 | **Output** | Risk report + routing instruction |
 
-**Risk logic:**
-```
-LOW    → amount ≤ $500   AND COMPLIANT AND budget OK  → Auto-approve
-MEDIUM → amount ≤ $1,500 OR  CONDITIONAL              → Manager review
-HIGH   → amount > $1,500 OR  NON-COMPLIANT OR exceeded → CFO escalation
-```
+**Risk routing logic / Logic phân loại rủi ro:**
+
+| Risk Level | Condition / Điều kiện | Action |
+|---|---|---|
+| 🟢 **LOW** | amount ≤ $500 **AND** COMPLIANT **AND** budget OK | Auto-approve |
+| 🟡 **MEDIUM** | amount ≤ $1,500 **OR** CONDITIONAL | Manager review |
+| 🔴 **HIGH** | amount > $1,500 **OR** NON-COMPLIANT **OR** budget exceeded | CFO escalation |
 
 ---
 
-### Agent 4 — Approval Notifier
+### 🟣 Agent 4 — Approval Notifier
+
 **Model:** GPT-4o via AI/ML API
 
-Bộ phận hoàn tất. Xử lý mọi quyết định (tự động hoặc từ con người), cập nhật database, thông báo kết quả.
+Bộ phận hoàn tất. Xử lý mọi quyết định (tự động hoặc từ con người), cập nhật database, thông báo kết quả.  
+*The finalization unit. Handles all decisions (automated or human), updates the database, and notifies stakeholders.*
 
 | | |
 |---|---|
 | **Tools** | `get_expense_details`, `approve_expense`, `reject_expense`, `log_agent_action` |
-| **Input types** | A: auto-approve từ Risk Evaluator; B: APPROVE/REJECT từ human; C: Partial approval |
+| **Input Type A** | Auto-approve instruction from Risk Evaluator |
+| **Input Type B** | `APPROVE` / `REJECT` command from human (Manager / CFO) |
+| **Input Type C** | Partial approval with adjusted amount |
 
 ---
 
 ## 6. Human-in-the-Loop
 
-**Thiết kế cốt lõi:** AI xử lý tự động khi an toàn, giao con người khi rủi ro cao.
+**Thiết kế cốt lõi:** AI xử lý tự động khi an toàn, giao con người khi rủi ro cao.  
+*Core design principle: AI handles automatically when safe, hands off to humans when risk is high.*
 
-```
-Risk Level        Ai quyết định?        Thời gian          Cách thực hiện
-──────────────    ──────────────────    ─────────────      ─────────────────────────────────
-LOW (≤$500)       AI Tự Động            ~30 giây           Không cần người
-MEDIUM ($500–$1,500)  Human Manager     Manager quyết định  @approval-notifier APPROVE EXP-XXX
-HIGH (>$1,500)    CFO                   CFO quyết định     @approval-notifier APPROVE EXP-XXX
-                                                           @approval-notifier REJECT EXP-XXX [lý do]
-```
+| Risk Level | Ai quyết định? / Who decides? | Thời gian / Time | Cách thực hiện / How |
+|---|---|---|---|
+| 🟢 **LOW** (≤$500) | 🤖 AI tự động / AI Auto | ~30 giây / ~30 sec | Không cần người / No human needed |
+| 🟡 **MEDIUM** ($500–$1,500) | 👔 Human Manager | Manager quyết định / Manager decides | `@approval-notifier APPROVE EXP-XXX` |
+| 🔴 **HIGH** (>$1,500) | 💼 CFO | CFO quyết định / CFO decides | `@approval-notifier APPROVE EXP-XXX` hoặc / or `@approval-notifier REJECT EXP-XXX [lý do / reason]` |
 
-**Con người không cần biết gì về kỹ thuật** — chỉ cần đọc báo cáo trong Band và gõ lệnh đơn giản.
+> 💡 **Con người không cần biết gì về kỹ thuật** — chỉ cần đọc báo cáo trong Band và gõ lệnh đơn giản.  
+> *Humans don't need any technical knowledge — just read the report in Band and type a simple command.*
 
 ---
 
@@ -297,8 +296,8 @@ HIGH (>$1,500)    CFO                   CFO quyết định     @approval-notifi
 | Component | Technology |
 |---|---|
 | Agent Framework | Band SDK + LangGraph ReAct |
-| LLM (Budget, Risk, Approval) | GPT-4o via AI/ML API |
-| LLM (Policy Checker) | Llama 3.1 70B via Featherless AI |
+| LLM — Budget, Risk, Approval | GPT-4o via AI/ML API |
+| LLM — Policy Checker | Llama 3.1 70B via Featherless AI |
 | Agent Communication | Band (WebSocket + REST API) |
 | Database | SQLite (demo) → PostgreSQL (production) |
 | Web Dashboard | Flask + HTML/CSS/JS |
@@ -309,19 +308,21 @@ HIGH (>$1,500)    CFO                   CFO quyết định     @approval-notifi
 
 ## 8. Cài đặt & Chạy / Setup & Running
 
-### Option A — Docker (Recommended, VPS)
+### Option A — Docker (Khuyến nghị cho VPS / Recommended for VPS)
 
 ```bash
 git clone https://github.com/thanhvuaws-jpg/band-expense-approval-agents.git
 cd band-expense-approval-agents
 
 cp .env.example .env
-nano .env          # điền API keys
+nano .env          # điền API keys / fill in API keys
 
 docker compose up -d --build
 ```
 
 Dashboard: `http://YOUR_IP:5000`
+
+---
 
 ### Option B — Local (Windows)
 
@@ -334,12 +335,14 @@ python -m venv .venv
 pip install -e .
 
 cp .env.example .env
-# điền .env với API keys của bạn
+# điền .env với API keys của bạn / fill .env with your API keys
 
-start.bat    # mở 2 terminal tự động
+start.bat    # mở 2 terminal tự động / auto-opens 2 terminals
 ```
 
-### .env format
+---
+
+### Cấu hình `.env` / Environment Variables
 
 ```env
 BAND_BUDGET_CHECKER_ID=your-agent-id
@@ -358,90 +361,110 @@ AIML_API_KEY=your-aiml-key
 FEATHERLESS_API_KEY=your-featherless-key
 ```
 
-### Bước cuối — Tạo Band room
+---
 
-1. Tạo room mới trên Band
-2. Invite cả 4 agent vào room
-3. Test bằng cách gõ lệnh trong room
+### Bước cuối — Tạo Band room / Final Step — Create Band Room
+
+1. Tạo room mới trên Band / *Create a new room in Band*
+2. Invite cả 4 agent vào room / *Invite all 4 agents to the room*
+3. Test bằng cách gõ lệnh trong room / *Test by typing a command in the room*
 
 ---
 
 ## 9. Demo Scenarios
 
-### Scenario 1 — LOW Risk ✅ (Auto-approved ~30 giây)
+### ✅ Scenario 1 — LOW Risk (Auto-approved / Tự động duyệt ~30 giây)
 
+**Command:**
 ```
 @budget-checker $200 office supplies, HR dept, vendor: Staples
 ```
 
-Pipeline: Budget OK → COMPLIANT → LOW → **Auto-approved, $200 deducted từ HR budget**
+**Pipeline:**
+```
+Budget OK → COMPLIANT → LOW Risk → ✅ Auto-approved
+$200 deducted from HR budget
+```
 
 ---
 
-### Scenario 2 — MEDIUM Risk ⚠️ (Manager duyệt)
+### ⚠️ Scenario 2 — MEDIUM Risk (Manager review)
 
+**Command:**
 ```
 @budget-checker $800 conference tickets, Marketing dept, vendor: Eventbrite
 ```
 
-Pipeline: Budget OK → CONDITIONAL → MEDIUM → **Manager nhận thông báo**
+**Pipeline:**
+```
+Budget OK → CONDITIONAL → MEDIUM Risk → ⚠️ Manager notified
+```
 
-Manager gõ để duyệt:
+**Manager duyệt / Manager approves:**
 ```
 @approval-notifier APPROVE EXP-XXXXXX
 ```
 
 ---
 
-### Scenario 3 — HIGH Risk 🚨 (CFO leo thang)
+### 🚨 Scenario 3 — HIGH Risk (CFO escalation)
 
+**Command:**
 ```
 @budget-checker $6000 SAP software license, Engineering dept, vendor: SAP
 ```
 
-Pipeline: Budget TIGHT → NON-COMPLIANT (>$5,000 cần CFO, software >$1,000 cần IT) → HIGH → **CFO nhận thông báo**
+**Pipeline:**
+```
+Budget TIGHT → NON-COMPLIANT (>$5,000 needs CFO · software >$1,000 needs IT)
+→ HIGH Risk → 🚨 CFO notified
+```
 
-CFO gõ để từ chối:
+**CFO từ chối / CFO rejects:**
 ```
 @approval-notifier REJECT EXP-XXXXXX budget not available this quarter
 ```
 
 ---
 
-### Scenario 4 — Web Dashboard 🖥️
+### 🖥️ Scenario 4 — Web Dashboard
 
-1. Mở `http://YOUR_IP:5000`
-2. Điền form: họ tên, số tiền, phòng ban, mô tả, vendor
-3. Bấm **Gửi Yêu Cầu**
-4. Pipeline tự động chạy, kết quả hiện trong Band và dashboard
+1. Mở / *Open* `http://YOUR_IP:5000`
+2. Điền form: họ tên, số tiền, phòng ban, mô tả, vendor / *Fill the form: name, amount, department, description, vendor*
+3. Bấm **Gửi Yêu Cầu** / *Click **Submit Request***
+4. Pipeline tự động chạy / *Pipeline runs automatically*
+5. Kết quả hiện trong Band và dashboard / *Results appear in both Band and the dashboard*
 
 ---
 
-## 10. Scale lên Enterprise
+## 10. Scale lên Enterprise / Enterprise Scaling
 
-Hiện tại là **demo hoạt động thật** — pipeline đầy đủ, deploy trên VPS 24/7.
+Hiện tại là **demo hoạt động thật** — pipeline đầy đủ, deploy trên VPS 24/7.  
+*Currently a **fully working demo** — complete pipeline, deployed on VPS 24/7.*
 
-| Hạng Mục | Demo (Hiện Tại) | Production (Enterprise) |
+| Hạng Mục / Feature | 🧪 Demo (Hiện Tại / Current) | 🏢 Production (Enterprise) |
 |---|---|---|
 | Database | SQLite | PostgreSQL / MySQL HA |
-| Authentication | Không có | SSO / OAuth2 (Google, Microsoft) |
+| Authentication | Không có / None | SSO / OAuth2 (Google, Microsoft) |
 | Notification | Band only | Band + Email + Slack |
-| Multi-tenant | 1 công ty, 1 room | Nhiều công ty, room riêng mỗi phòng ban |
+| Multi-tenant | 1 công ty, 1 room / *1 company, 1 room* | Nhiều công ty, room riêng mỗi phòng ban / *Multi-company, per-dept rooms* |
 | Scale | Single VPS | Kubernetes / Cloud Run |
 | Monitoring | Docker logs | Grafana + Prometheus |
 
 ---
 
-## 11. Cấu trúc Project
+## 11. Cấu trúc Project / Project Structure
 
 ```
-.
+band-expense-approval-agents/
+│
 ├── main.py              # 4 AI agents + message sender
-├── dashboard.py         # Flask web UI (employee form)
-├── tools.py             # LangChain tools wrapping SQLite
-├── db.py                # Database layer (budgets, expenses, audit)
+├── dashboard.py         # Flask web UI (employee submission form)
+├── tools.py             # LangChain tools wrapping SQLite operations
+├── db.py                # Database layer (budgets, expenses, audit log)
 ├── monitor.py           # Budget monitor (zero LLM cost)
-├── Dockerfile           # Docker image
+│
+├── Dockerfile           # Docker image definition
 ├── docker-compose.yml   # 2 services: agents + dashboard
 ├── start.bat            # One-click launcher (Windows)
 ├── pyproject.toml       # Python dependencies
@@ -450,11 +473,16 @@ Hiện tại là **demo hoạt động thật** — pipeline đầy đủ, deplo
 
 ---
 
-## License
+## 📄 License
 
 MIT
 
 ---
 
-*Built for Band of Agents Hackathon 2026 · Track 1: Internal Enterprise Workflows*  
-*Powered by Band SDK + AI/ML API (GPT-4o) + Featherless AI (Llama 3.1 70B)*
+<div align="center">
+
+**Built for Band of Agents Hackathon 2026 · Track 1: Internal Enterprise Workflows**
+
+*Powered by Band SDK · AI/ML API (GPT-4o) · Featherless AI (Llama 3.1 70B)*
+
+</div>
