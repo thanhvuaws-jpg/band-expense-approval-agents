@@ -467,18 +467,31 @@ const statusMap = {
 };
 
 /* ─── Pending ─── */
+let showAllPending = false;
+
+function removeCard(id) {
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    card.style.transition = 'opacity 0.3s, transform 0.3s';
+    card.style.opacity = '0'; card.style.transform = 'translateX(30px)';
+    setTimeout(() => card.remove(), 320);
+  }
+}
+
 async function approve(id, btn) {
   btn.disabled = true; btn.textContent = 'Đang gửi...';
   try {
     const r = await fetch('/api/approve/' + id, {method:'POST'});
     const d = await r.json();
-    if (r.ok) { showToast('Đã gửi APPROVE ' + id + ' tới Band!'); setTimeout(refresh, 2500); }
+    if (r.ok) { showToast('Đã duyệt ' + id + '!'); removeCard(id); }
     else { showToast(d.error || 'Lỗi Band API', 'error'); btn.disabled=false; btn.textContent='✅ Duyệt'; }
   } catch { showToast('Lỗi kết nối','error'); btn.disabled=false; btn.textContent='✅ Duyệt'; }
 }
+
 function toggleRejectForm(id) {
   document.getElementById('reject-form-' + id).classList.toggle('show');
 }
+
 async function confirmReject(id) {
   const reason = (document.getElementById('reject-reason-' + id).value || '').trim() || 'Rejected by admin';
   const btn = document.getElementById('reject-confirm-btn-' + id);
@@ -489,39 +502,60 @@ async function confirmReject(id) {
       body: JSON.stringify({reason}),
     });
     const d = await r.json();
-    if (r.ok) { showToast('Đã gửi REJECT ' + id + ' tới Band!'); setTimeout(refresh, 2500); }
+    if (r.ok) { showToast('Đã từ chối ' + id + '!'); removeCard(id); }
     else { showToast(d.error || 'Lỗi Band API', 'error'); btn.disabled=false; btn.textContent='Xác Nhận'; }
   } catch { showToast('Lỗi kết nối','error'); btn.disabled=false; btn.textContent='Xác Nhận'; }
 }
 
+async function dismiss(id) {
+  await fetch('/api/dismiss/' + id, {method:'POST'});
+  removeCard(id);
+  showToast('Đã bỏ qua ' + id);
+}
+
 async function loadPending() {
   try {
-    const r = await fetch('/api/pending');
+    const url = '/api/pending' + (showAllPending ? '?all=1' : '');
+    const r = await fetch(url);
     const d = await r.json();
     const list = document.getElementById('pending-list');
     const cnt  = document.getElementById('pending-count');
+
     if (!d.expenses || d.expenses.length === 0) {
       cnt.textContent = '';
       list.innerHTML = `<div class="empty"><div class="empty-icon">✅</div>
-        <h3>Không có yêu cầu nào đang chờ</h3><p>Tất cả đã được xử lý</p></div>`;
+        <h3>Không có yêu cầu nào đang chờ</h3>
+        <p>${showAllPending ? 'Tất cả đã được xử lý' : '24 giờ gần nhất — <a href="#" onclick="toggleShowAll();return false" style="color:var(--primary)">Xem tất cả</a>'}</p>
+      </div>`;
       return;
     }
     cnt.textContent = '(' + d.expenses.length + ')';
-    list.innerHTML = d.expenses.map(e => {
-      const riskCls = e.risk_level === 'HIGH' ? 'tag-high' : 'tag-medium';
-      const riskLbl = e.risk_level === 'HIGH' ? '🔴 HIGH RISK' : '🟡 MEDIUM RISK';
-      const statusLbl = e.status === 'PENDING_CFO' ? 'Chờ CFO duyệt' : 'Chờ Manager duyệt';
-      return `<div class="exp-card">
+
+    const toggleBtn = `<div style="margin-bottom:12px;text-align:right">
+      <button onclick="toggleShowAll()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 14px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit">
+        ${showAllPending ? '⏱ Chỉ 24h gần nhất' : '📋 Xem tất cả'}
+      </button>
+    </div>`;
+
+    const cards = d.expenses.map(e => {
+      const riskCls = e.risk_level === 'HIGH' ? 'tag-high' : e.risk_level === 'LOW' ? '' : 'tag-medium';
+      const riskLbl = e.risk_level === 'HIGH' ? '🔴 HIGH' : e.risk_level === 'MEDIUM' ? '🟡 MEDIUM' : e.risk_level === 'LOW' ? '🟢 LOW' : '⏳ Processing';
+      const statusLbl = e.status === 'PENDING_CFO' ? 'Chờ CFO' : e.status === 'PENDING_MANAGER' ? 'Chờ Manager' : 'Đang xử lý';
+      return `<div class="exp-card" id="card-${e.id}">
         <div class="exp-card-top">
           <div style="flex:1;min-width:0">
             <div class="exp-id">${e.id}</div>
             <div class="exp-desc">${e.description || e.expense_type || 'N/A'}</div>
             <div class="exp-meta">${e.requester||'—'} · ${e.department} · ${fmtDate(e.created_at)}</div>
           </div>
-          <div><div class="exp-amount">$${(e.amount||0).toLocaleString()}</div></div>
+          <div style="display:flex;align-items:flex-start;gap:8px">
+            <div class="exp-amount">$${(e.amount||0).toLocaleString()}</div>
+            <button onclick="dismiss('${e.id}')" title="Bỏ qua"
+              style="background:#f1f5f9;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.8rem;color:#94a3b8;font-weight:700">✕</button>
+          </div>
         </div>
         <div class="exp-card-mid">
-          <span class="tag ${riskCls}">${riskLbl}</span>
+          ${riskCls ? `<span class="tag ${riskCls}">${riskLbl}</span>` : `<span class="tag tag-dept">${riskLbl}</span>`}
           <span class="tag tag-type">${e.expense_type||'other'}</span>
           <span class="tag tag-dept">${e.department}</span>
           ${e.vendor&&e.vendor!=='N/A'?`<span class="tag tag-dept">${e.vendor}</span>`:''}
@@ -541,7 +575,14 @@ async function loadPending() {
         </div>
       </div>`;
     }).join('');
+
+    list.innerHTML = toggleBtn + cards;
   } catch {}
+}
+
+function toggleShowAll() {
+  showAllPending = !showAllPending;
+  loadPending();
 }
 
 /* ─── History ─── */
@@ -712,15 +753,26 @@ def index():
 
 @app.route("/api/pending")
 def api_pending():
+    show_all = request.args.get("all") == "1"
     with db._conn() as conn:
-        rows = conn.execute("""
-            SELECT id, requester, amount, department, expense_type,
-                   description, vendor, status, risk_level, created_at
-            FROM expenses
-            WHERE status NOT IN ('APPROVED','REJECTED')
-            ORDER BY created_at DESC
-        """).fetchall()
-    return jsonify(expenses=[dict(r) for r in rows])
+        if show_all:
+            rows = conn.execute("""
+                SELECT id, requester, amount, department, expense_type,
+                       description, vendor, status, risk_level, created_at
+                FROM expenses
+                WHERE status NOT IN ('APPROVED','REJECTED','DISMISSED')
+                ORDER BY created_at DESC
+            """).fetchall()
+        else:
+            rows = conn.execute("""
+                SELECT id, requester, amount, department, expense_type,
+                       description, vendor, status, risk_level, created_at
+                FROM expenses
+                WHERE status NOT IN ('APPROVED','REJECTED','DISMISSED')
+                  AND created_at >= datetime('now', '-24 hours')
+                ORDER BY created_at DESC
+            """).fetchall()
+    return jsonify(expenses=[dict(r) for r in rows], show_all=show_all)
 
 
 @app.route("/api/history")
@@ -779,6 +831,9 @@ def api_reset_all():
 @app.route("/api/approve/<expense_id>", methods=["POST"])
 def api_approve(expense_id):
     ok = _band_send(f"APPROVE {expense_id}")
+    # Mark as sent in DB so it disappears from pending immediately
+    db.update_expense(expense_id, status="APPROVED")
+    db.log_audit(expense_id, "admin-panel", "APPROVED", "Approved via admin panel web UI")
     if ok:
         return jsonify(ok=True)
     return jsonify(ok=False, error="Không kết nối được Band API"), 502
@@ -789,9 +844,20 @@ def api_reject(expense_id):
     data = request.get_json() or {}
     reason = (data.get("reason") or "Rejected by admin").strip()
     ok = _band_send(f"REJECT {expense_id} {reason}")
+    # Mark as rejected in DB immediately
+    db.update_expense(expense_id, status="REJECTED", risk_notes=reason)
+    db.log_audit(expense_id, "admin-panel", "REJECTED", reason)
     if ok:
         return jsonify(ok=True)
     return jsonify(ok=False, error="Không kết nối được Band API"), 502
+
+
+@app.route("/api/dismiss/<expense_id>", methods=["POST"])
+def api_dismiss(expense_id):
+    """Dismiss a stuck/old expense directly without going through Band."""
+    db.update_expense(expense_id, status="DISMISSED")
+    db.log_audit(expense_id, "admin-panel", "DISMISSED", "Manually dismissed from admin panel")
+    return jsonify(ok=True)
 
 
 if __name__ == "__main__":
