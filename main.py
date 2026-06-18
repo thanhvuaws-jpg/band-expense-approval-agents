@@ -156,7 +156,7 @@ STEP 2: Call band_send_message ONCE with:
 
 policy_checker = Agent.create(
     adapter=LangGraphAdapter(
-        llm=make_featherless_llm(),
+        llm=make_llm(),
         checkpointer=InMemorySaver(),
         custom_section=POLICY_CHECKER_PROMPT,
         additional_tools=[
