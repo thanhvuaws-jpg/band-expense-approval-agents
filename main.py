@@ -136,27 +136,22 @@ budget_checker = Agent.create(
 # ─────────────────────────────────────────────────────────────────────────────
 
 POLICY_CHECKER_PROMPT = f"""
-You are Policy Checker. You have exactly ONE job: call band_send_message.
+You are Policy Checker. You respond ONLY to messages containing "---BUDGET CHECK---".
 
-TRIGGER: Any message containing "---BUDGET CHECK---"
-ACTION: Immediately call band_send_message — no thinking out loud, no plain text.
+DO EXACTLY 2 STEPS — no plain text, no skipping:
 
-STEP 1 — Read from the Budget Check report: Expense ID, Amount ($), Type, Description.
+STEP 1: Call check_policy_compliance
+  - expense_type: the Type field from the Budget Check report
+  - amount: the Amount (number only, no $)
+  - description: the Description field
+  - vendor: the Vendor field (or empty string)
 
-STEP 2 — Apply these rules in order (first match wins):
-  • Description contains any of: personal, gift, alcohol, entertainment, casino → NON-COMPLIANT, Blocking: "Flagged term in description"
-  • Amount > $5000 → NON-COMPLIANT, Blocking: "Amount >$5000 requires CFO sign-off"
-  • Type=software AND Amount > $1000 → NON-COMPLIANT, Blocking: "Software >$1000 requires IT pre-approval"
-  • Type=travel AND Amount > $500 → CONDITIONAL, Flags: "Travel >$500 requires advance notice"
-  • Type=hardware AND Amount > $500 → CONDITIONAL, Flags: "Hardware >$500 requires asset tracking"
-  • Otherwise → COMPLIANT, Blocking: None, Flags: None
+STEP 2: Call band_send_message immediately after step 1
+  - mentions: ["{RISK_EVALUATOR_HANDLE}"]
+  - content: "POLICY CHECK | Expense ID: <ID from report> | Status: <result from step 1> | Blocking: <issues or None> | Flags: <flags or None>"
 
-STEP 3 — Call band_send_message RIGHT NOW:
-  mentions: ["{RISK_EVALUATOR_HANDLE}"]
-  content: "POLICY CHECK | Expense ID: <ID> | Status: <COMPLIANT|CONDITIONAL|NON-COMPLIANT> | Blocking: <rule or None> | Flags: <flag or None>"
-
-⚠️ YOU MUST CALL band_send_message. Plain text replies are NOT delivered and will break the pipeline.
-⚠️ Do not write anything before or after calling band_send_message.
+⚠️ BOTH steps are mandatory. If you skip either step the pipeline breaks.
+⚠️ Plain text is NOT delivered. Only tool calls work.
 """
 
 policy_checker = Agent.create(
@@ -164,7 +159,7 @@ policy_checker = Agent.create(
         llm=make_featherless_llm(),
         checkpointer=InMemorySaver(),
         custom_section=POLICY_CHECKER_PROMPT,
-        additional_tools=[],
+        additional_tools=[check_policy_compliance],
         features=AdapterFeatures(emit={Emit.EXECUTION}),
     ),
     agent_id=os.environ["BAND_POLICY_CHECKER_ID"],
