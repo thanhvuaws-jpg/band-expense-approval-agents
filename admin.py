@@ -849,14 +849,15 @@ def api_approve(expense_id):
     if not success:
         return jsonify(ok=False, error="Expense not found"), 404
     row = db.get_expense(expense_id)
-    # Post notification to Band (not an APPROVE command — just status update)
+    requester = row["requester"] if row else "—"
+    amount_str = f"${row['amount']:,.0f} ({row['department']})" if row else "—"
     notify = (
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"  EXPENSE DECISION — {expense_id}\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"  Status:     ✅ APPROVED\n"
-        f"  Requester:  {row['requester'] if row else '—'}\n"
-        f"  Amount:     ${row['amount']:,.0f} ({row['department']})\n" if row else "  Amount:     —\n"
+        f"  Requester:  {requester}\n"
+        f"  Amount:     {amount_str}\n"
         f"  Decided by: Manager (Admin Panel)\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"  Audit trail saved ✓ | Budget updated ✓"
@@ -873,13 +874,15 @@ def api_reject(expense_id):
     if not success:
         return jsonify(ok=False, error="Expense not found"), 404
     row = db.get_expense(expense_id)
+    requester = row["requester"] if row else "—"
+    amount_str = f"${row['amount']:,.0f} ({row['department']})" if row else "—"
     notify = (
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"  EXPENSE DECISION — {expense_id}\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         f"  Status:     ❌ REJECTED\n"
-        f"  Requester:  {row['requester'] if row else '—'}\n"
-        f"  Amount:     ${row['amount']:,.0f} ({row['department']})\n" if row else "  Amount:     —\n"
+        f"  Requester:  {requester}\n"
+        f"  Amount:     {amount_str}\n"
         f"  Reason:     {reason}\n"
         f"  Decided by: Manager (Admin Panel)\n"
         f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
