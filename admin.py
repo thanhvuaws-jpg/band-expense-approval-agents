@@ -844,23 +844,49 @@ def api_reset_all():
 
 @app.route("/api/approve/<expense_id>", methods=["POST"])
 def api_approve(expense_id):
-    ok = _band_send(f"APPROVE {expense_id}")
-    if ok:
-        # Log intent; Approval Notifier will update DB status
-        db.log_audit(expense_id, "admin-panel", "APPROVE_SENT", "Approve command sent via admin panel")
-        return jsonify(ok=True)
-    return jsonify(ok=False, error="Không kết nối được Band API"), 502
+    # Update DB directly — reliable, no dependency on Approval Notifier
+    success = db.approve_expense(expense_id, approved_by="manager-web")
+    if not success:
+        return jsonify(ok=False, error="Expense not found"), 404
+    row = db.get_expense(expense_id)
+    # Post notification to Band (not an APPROVE command — just status update)
+    notify = (
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  EXPENSE DECISION — {expense_id}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  Status:     ✅ APPROVED\n"
+        f"  Requester:  {row['requester'] if row else '—'}\n"
+        f"  Amount:     ${row['amount']:,.0f} ({row['department']})\n" if row else "  Amount:     —\n"
+        f"  Decided by: Manager (Admin Panel)\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  Audit trail saved ✓ | Budget updated ✓"
+    )
+    _band_send(notify)
+    return jsonify(ok=True)
 
 
 @app.route("/api/reject/<expense_id>", methods=["POST"])
 def api_reject(expense_id):
     data = request.get_json() or {}
     reason = (data.get("reason") or "Rejected by admin").strip()
-    ok = _band_send(f"REJECT {expense_id} {reason}")
-    if ok:
-        db.log_audit(expense_id, "admin-panel", "REJECT_SENT", reason)
-        return jsonify(ok=True)
-    return jsonify(ok=False, error="Không kết nối được Band API"), 502
+    success = db.reject_expense(expense_id, reason=reason, rejected_by="manager-web")
+    if not success:
+        return jsonify(ok=False, error="Expense not found"), 404
+    row = db.get_expense(expense_id)
+    notify = (
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  EXPENSE DECISION — {expense_id}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  Status:     ❌ REJECTED\n"
+        f"  Requester:  {row['requester'] if row else '—'}\n"
+        f"  Amount:     ${row['amount']:,.0f} ({row['department']})\n" if row else "  Amount:     —\n"
+        f"  Reason:     {reason}\n"
+        f"  Decided by: Manager (Admin Panel)\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"  Audit trail saved ✓"
+    )
+    _band_send(notify)
+    return jsonify(ok=True)
 
 
 @app.route("/api/dismiss/<expense_id>", methods=["POST"])
