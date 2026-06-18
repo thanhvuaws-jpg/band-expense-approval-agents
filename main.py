@@ -70,7 +70,7 @@ def make_featherless_llm() -> ChatOpenAI:
         model=FEATHERLESS_MODEL,
         api_key=os.environ["FEATHERLESS_API_KEY"],
         base_url=FEATHERLESS_BASE_URL,
-        temperature=0.1,
+        temperature=0,
     )
 
 
@@ -136,26 +136,27 @@ budget_checker = Agent.create(
 # ─────────────────────────────────────────────────────────────────────────────
 
 POLICY_CHECKER_PROMPT = f"""
-You are the Policy Checker agent in an enterprise Expense Approval System.
-You ONLY respond when you see a Budget Checker report (contains ---BUDGET CHECK---).
+You are Policy Checker. You have exactly ONE job: call band_send_message.
 
-POLICY RULES (apply yourself, no tool needed):
-- Travel > $500: CONDITIONAL (requires 2-week advance notice)
-- Software > $1000: NON-COMPLIANT (requires IT pre-approval)
-- Hardware > $500: CONDITIONAL (requires asset tracking)
-- Any amount > $5000: NON-COMPLIANT (requires CFO sign-off)
-- Description contains personal/gift/alcohol/entertainment/casino: NON-COMPLIANT
+TRIGGER: Any message containing "---BUDGET CHECK---"
+ACTION: Immediately call band_send_message — no thinking out loud, no plain text.
 
-COMPLIANCE STATUS:
-- NON-COMPLIANT: any blocking rule triggered
-- CONDITIONAL: any review flag triggered (no blocking)
-- COMPLIANT: no issues
+STEP 1 — Read from the Budget Check report: Expense ID, Amount ($), Type, Description.
 
-DO EXACTLY 1 STEP ONLY. NO extra messages. NO plain text replies before or after.
+STEP 2 — Apply these rules in order (first match wins):
+  • Description contains any of: personal, gift, alcohol, entertainment, casino → NON-COMPLIANT, Blocking: "Flagged term in description"
+  • Amount > $5000 → NON-COMPLIANT, Blocking: "Amount >$5000 requires CFO sign-off"
+  • Type=software AND Amount > $1000 → NON-COMPLIANT, Blocking: "Software >$1000 requires IT pre-approval"
+  • Type=travel AND Amount > $500 → CONDITIONAL, Flags: "Travel >$500 requires advance notice"
+  • Type=hardware AND Amount > $500 → CONDITIONAL, Flags: "Hardware >$500 requires asset tracking"
+  • Otherwise → COMPLIANT, Blocking: None, Flags: None
 
-Call band_send_message with:
+STEP 3 — Call band_send_message RIGHT NOW:
   mentions: ["{RISK_EVALUATOR_HANDLE}"]
-  content: "POLICY CHECK | Expense ID: [ID from report] | Status: [COMPLIANT or CONDITIONAL or NON-COMPLIANT] | Blocking: [rule violated or None] | Flags: [flags or None]"
+  content: "POLICY CHECK | Expense ID: <ID> | Status: <COMPLIANT|CONDITIONAL|NON-COMPLIANT> | Blocking: <rule or None> | Flags: <flag or None>"
+
+⚠️ YOU MUST CALL band_send_message. Plain text replies are NOT delivered and will break the pipeline.
+⚠️ Do not write anything before or after calling band_send_message.
 """
 
 policy_checker = Agent.create(
