@@ -718,10 +718,6 @@ def api_pending():
                    description, vendor, status, risk_level, created_at
             FROM expenses
             WHERE status NOT IN ('APPROVED','REJECTED')
-              AND (
-                status IN ('PENDING_MANAGER','PENDING_CFO')
-                OR risk_level IN ('MEDIUM','HIGH')
-              )
             ORDER BY created_at DESC
         """).fetchall()
     return jsonify(expenses=[dict(r) for r in rows])
