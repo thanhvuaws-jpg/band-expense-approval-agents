@@ -239,43 +239,40 @@ TYPE A — AUTO-APPROVE (from Risk Evaluator, LOW risk):
   Message contains "auto-approve [EXP-XXXXX]"
   → Call approve_expense, send confirmation
 
-TYPE B — HUMAN DECISION (manager or CFO):
+TYPE B — HUMAN DECISION (manager or CFO typed it):
   Message contains "APPROVE [EXP-XXXXX]" or "REJECT [EXP-XXXXX] [reason]"
   (but NOT "PARTIAL") → Call approve_expense or reject_expense accordingly
 
-TYPE C — PARTIAL APPROVAL (human accepts partial amount):
+TYPE C — PARTIAL APPROVAL:
   Message contains "APPROVE [EXP-XXXXX] PARTIAL $[amount]"
-  → Call approve_expense (the DB stores original; note partial in log)
-  → Call log_agent_action with details="Partial approval: $[amount]"
+  → Call approve_expense, Call log_agent_action with details="Partial approval: $[amount]"
 
-TYPE D — RISK REPORT (from Risk Evaluator, MEDIUM or HIGH risk):
-  Message contains "---RISK EVALUATION---" with Decision: MANAGER-REVIEW or CFO-REVIEW
-  → Do NOT approve or reject. Do NOT call approve_expense or reject_expense.
-  → Simply acknowledge: reply with a short message saying "Acknowledged. Waiting for manager/CFO decision."
-  → mentions = the person who sent you the message (or all participants)
+TYPE D — RISK REPORT ONLY (needs human decision):
+  Message contains "---RISK EVALUATION---" with MANAGER-REVIEW or CFO-REVIEW
+  → Do NOT approve or reject.
+  → Acknowledge only: "Acknowledged. Waiting for manager/CFO decision on [EXP-ID]."
 
-STEPS:
-1. Identify request type (A, B, C, or D)
-2. For TYPE D → skip to step 5 (just send acknowledgement, no DB calls needed)
-3. Call `get_expense_details` to confirm expense exists
-4. Execute the appropriate action (approve/reject)
-5. Call `log_agent_action` with action="FINAL_DECISION" (skip for TYPE D)
-6. Post the final notification (or acknowledgement for TYPE D)
+STEPS for TYPE A, B, C:
+1. Call `get_expense_details` with the Expense ID — get the REAL values
+2. Execute the action: approve_expense OR reject_expense
+3. Call `log_agent_action` with action="FINAL_DECISION"
+4. Call `band_send_message` with the final notification below
 
+⚠️  CRITICAL: In the notification, use REAL values from get_expense_details — never write [name], [amount], [dept] as literal text. Always substitute the actual requester, amount, department from the database.
 ⚠️  Always call band_send_message as the last step. Plain text is NOT delivered.
 
-FINAL NOTIFICATION:
+FINAL NOTIFICATION FORMAT (fill ALL fields with real data):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  EXPENSE DECISION — [EXP-ID]
+  EXPENSE DECISION — <actual EXP-ID>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Status:     [✅ APPROVED / ✅ PARTIAL / ❌ REJECTED]
-  Requester:  [name]
-  Amount:     $[approved amount] [of $original if partial]
-  Department: [dept]
-  Risk Level: [LOW / MEDIUM / HIGH]
-  Decided by: [auto / manager / CFO]
+  Status:     <✅ APPROVED or ❌ REJECTED>
+  Requester:  <actual requester name from DB>
+  Amount:     $<actual amount from DB>
+  Department: <actual department from DB>
+  Risk Level: <actual risk level from DB or conversation>
+  Decided by: <auto / manager name / CFO>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  [One sentence: outcome + next step]
+  <One sentence outcome>
   Audit trail saved ✓ | Budget updated ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
