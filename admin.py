@@ -18,27 +18,38 @@ BAND_BASE = "https://app.band.ai/api/v1/agent"
 _room_ids: list[str] = []
 
 
-def _get_rooms() -> list[str]:
+def _fetch_rooms_fresh() -> list[str]:
+    """Always fetch fresh room list (no cache)."""
     global _room_ids
-    if _room_ids:
-        return _room_ids
-    key = os.environ.get("BAND_BUDGET_CHECKER_KEY", "")
+    key = os.environ.get("BAND_RISK_EVALUATOR_KEY", "")
     if not key:
-        return []
+        return _room_ids
     try:
         r = httpx.get(f"{BAND_BASE}/chats", headers={"X-API-Key": key}, timeout=10)
         if r.is_success:
             _room_ids = [c["id"] for c in r.json().get("data", [])]
+            print(f"[admin] rooms refreshed: {_room_ids}")
     except Exception as e:
         print(f"[admin] room fetch error: {e}")
     return _room_ids
 
 
+def _get_rooms() -> list[str]:
+    global _room_ids
+    if not _room_ids:
+        _fetch_rooms_fresh()
+    return _room_ids
+
+
 def _band_send(content: str) -> bool:
-    key = os.environ.get("BAND_BUDGET_CHECKER_KEY", "")
+    """Send using Risk Evaluator key (natural sender for Approval Notifier)."""
+    # Always refresh rooms to pick up new rooms
+    _fetch_rooms_fresh()
+    key = os.environ.get("BAND_RISK_EVALUATOR_KEY", "")
     notifier_id = os.environ.get("BAND_APPROVAL_NOTIFIER_ID", "")
-    rooms = _get_rooms()
+    rooms = _room_ids
     if not rooms or not key:
+        print(f"[admin] _band_send: no rooms or key")
         return False
     payload = {
         "message": {
@@ -54,8 +65,11 @@ def _band_send(content: str) -> bool:
                            json=payload, headers=headers, timeout=10)
             if r.is_success:
                 ok = True
-        except Exception:
-            pass
+                print(f"[admin] sent to room {room_id[:8]}: {content[:60]}")
+            else:
+                print(f"[admin] room {room_id[:8]} → {r.status_code}: {r.text[:100]}")
+        except Exception as e:
+            print(f"[admin] send error: {e}")
     return ok
 
 
@@ -831,10 +845,9 @@ def api_reset_all():
 @app.route("/api/approve/<expense_id>", methods=["POST"])
 def api_approve(expense_id):
     ok = _band_send(f"APPROVE {expense_id}")
-    # Mark as sent in DB so it disappears from pending immediately
-    db.update_expense(expense_id, status="APPROVED")
-    db.log_audit(expense_id, "admin-panel", "APPROVED", "Approved via admin panel web UI")
     if ok:
+        # Log intent; Approval Notifier will update DB status
+        db.log_audit(expense_id, "admin-panel", "APPROVE_SENT", "Approve command sent via admin panel")
         return jsonify(ok=True)
     return jsonify(ok=False, error="Không kết nối được Band API"), 502
 
@@ -844,10 +857,8 @@ def api_reject(expense_id):
     data = request.get_json() or {}
     reason = (data.get("reason") or "Rejected by admin").strip()
     ok = _band_send(f"REJECT {expense_id} {reason}")
-    # Mark as rejected in DB immediately
-    db.update_expense(expense_id, status="REJECTED", risk_notes=reason)
-    db.log_audit(expense_id, "admin-panel", "REJECTED", reason)
     if ok:
+        db.log_audit(expense_id, "admin-panel", "REJECT_SENT", reason)
         return jsonify(ok=True)
     return jsonify(ok=False, error="Không kết nối được Band API"), 502
 
