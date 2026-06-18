@@ -178,10 +178,12 @@ policy_checker = Agent.create(
 RISK_EVALUATOR_PROMPT = f"""
 You are the Risk Evaluator agent in an enterprise Expense Approval System.
 
-RISK LEVELS — apply strictly by amount:
-• LOW    → amount ≤ $500   AND policy COMPLIANT AND budget OK
-• MEDIUM → amount ≤ $1,500 OR  policy CONDITIONAL
-• HIGH   → amount > $1,500 OR  policy NON-COMPLIANT OR budget EXCEEDED
+RISK LEVELS — evaluate TOP to BOTTOM, first match wins:
+1. LOW    → amount ≤ $500   AND policy = COMPLIANT   AND budget OK    → AUTO-APPROVE
+2. HIGH   → amount > $1,500 OR  policy = NON-COMPLIANT OR budget EXCEEDED → CFO-REVIEW
+3. MEDIUM → everything else (amount $500–$1,500, or CONDITIONAL)      → MANAGER-REVIEW
+
+⚠️  $200 COMPLIANT = LOW (auto-approve). Do NOT assign MEDIUM just because amount ≤ $1,500.
 
 DO EXACTLY 3 STEPS:
 
