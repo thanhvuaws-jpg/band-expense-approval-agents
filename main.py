@@ -305,28 +305,40 @@ approval_notifier = Agent.create(
 async def run_message_sender(interval: int = 4) -> None:
     """Pick up messages queued by the dashboard form and POST them via plain HTTP."""
     import httpx
-    # Use Approval Notifier to send (cannot mention self — Budget Checker can't mention itself)
-    sender_key     = os.environ["BAND_APPROVAL_NOTIFIER_KEY"]
-    budget_id      = os.environ["BAND_BUDGET_CHECKER_ID"]
-    base           = "https://app.band.ai/api/v1/agent"
-    headers        = {"X-API-Key": sender_key, "Content-Type": "application/json"}
-    room_ids: list[str] = []
+    sender_key = os.environ["BAND_APPROVAL_NOTIFIER_KEY"]
+    budget_id  = os.environ["BAND_BUDGET_CHECKER_ID"]
+    base       = "https://app.band.ai/api/v1/agent"
+    headers    = {"X-API-Key": sender_key, "Content-Type": "application/json"}
+
+    async def fetch_rooms(http) -> list[str]:
+        try:
+            r = await http.get(f"{base}/chats")
+            if r.is_success:
+                ids = [c["id"] for c in r.json().get("data", [])]
+                print(f"  📡 Rooms: {ids}")
+                return ids
+            print(f"  ⚠ list chats {r.status_code}: {r.text}")
+        except Exception as e:
+            print(f"  ⚠ fetch rooms error: {e}")
+        return []
 
     async with httpx.AsyncClient(headers=headers, timeout=10) as http:
+        room_ids: list[str] = []
+        refresh_counter = 0
+
         while True:
             await asyncio.sleep(interval)
             try:
                 pending = db.pop_pending_messages()
-                if not pending:
-                    continue
 
-                if not room_ids:
-                    r = await http.get(f"{base}/chats")
-                    if not r.is_success:
-                        print(f"  ⚠ list chats {r.status_code}: {r.text}")
-                    r.raise_for_status()
-                    room_ids = [c["id"] for c in r.json().get("data", [])]
-                    print(f"  📡 Found {len(room_ids)} room(s)")
+                # Refresh room list every 30 cycles (~2 min) or when empty
+                refresh_counter += 1
+                if not room_ids or refresh_counter >= 30:
+                    room_ids = await fetch_rooms(http)
+                    refresh_counter = 0
+
+                if not pending or not room_ids:
+                    continue
 
                 for row in pending:
                     payload = {
@@ -335,12 +347,31 @@ async def run_message_sender(interval: int = 4) -> None:
                             "mentions": [{"id": budget_id, "handle": "budget-checker", "name": "Budget Checker"}],
                         }
                     }
+                    sent = False
+                    bad_rooms = []
                     for room_id in room_ids:
-                        r = await http.post(f"{base}/chats/{room_id}/messages", json=payload)
-                        if not r.is_success:
-                            print(f"  ⚠ API {r.status_code}: {r.text}")
-                        r.raise_for_status()
-                    print(f"  📤 Dashboard → Band: {row['message'][:70]}…")
+                        r = await http.post(f"{base}/chats/{room_id}/messages",
+                                            json=payload)
+                        if r.is_success:
+                            sent = True
+                        else:
+                            print(f"  ⚠ room {room_id[:8]} → {r.status_code}")
+                            if r.status_code in (404, 422):
+                                bad_rooms.append(room_id)
+
+                    # Drop dead rooms so next cycle refetches clean list
+                    if bad_rooms:
+                        room_ids = [rid for rid in room_ids if rid not in bad_rooms]
+                        if not room_ids:
+                            room_ids = await fetch_rooms(http)
+
+                    if sent:
+                        print(f"  📤 Dashboard → Band: {row['message'][:70]}…")
+                    else:
+                        print(f"  ⚠ Failed to send to any room — will retry next cycle")
+                        # Put message back so it's not lost
+                        db.queue_message(row["message"])
+
             except Exception as e:
                 import traceback
                 print(f"  ⚠ Message sender error: {type(e).__name__}: {e}")
