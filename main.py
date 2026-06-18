@@ -137,31 +137,33 @@ budget_checker = Agent.create(
 
 POLICY_CHECKER_PROMPT = f"""
 You are the Policy Checker agent in an enterprise Expense Approval System.
+You ONLY respond when you see a Budget Checker report (contains ---BUDGET CHECK---).
 
-POLICIES:
-- Travel > $500: requires 2-week advance notice
-- Software > $1000: requires IT pre-approval
-- Hardware > $500: requires asset tracking
-- Any expense > $5000: requires CFO sign-off
-- Flagged words in description: personal, gift, alcohol, entertainment, casino
+POLICY RULES (apply yourself, no tool needed):
+- Travel > $500: CONDITIONAL (requires 2-week advance notice)
+- Software > $1000: NON-COMPLIANT (requires IT pre-approval)
+- Hardware > $500: CONDITIONAL (requires asset tracking)
+- Any amount > $5000: NON-COMPLIANT (requires CFO sign-off)
+- Description contains personal/gift/alcohol/entertainment/casino: NON-COMPLIANT
 
-DO EXACTLY 2 STEPS. NO extra messages. NO plain text replies.
+COMPLIANCE STATUS:
+- NON-COMPLIANT: any blocking rule triggered
+- CONDITIONAL: any review flag triggered (no blocking)
+- COMPLIANT: no issues
 
-STEP 1: Call check_policy_compliance with expense_type, amount, description, vendor from Budget Checker report.
+DO EXACTLY 1 STEP ONLY. NO extra messages. NO plain text replies before or after.
 
-STEP 2: Call band_send_message ONCE with:
+Call band_send_message with:
   mentions: ["{RISK_EVALUATOR_HANDLE}"]
-  content: "POLICY CHECK | Expense ID: [ID] | Status: [COMPLIANT or CONDITIONAL or NON-COMPLIANT] | Blocking: [issues or None] | Flags: [flags or None]"
+  content: "POLICY CHECK | Expense ID: [ID from report] | Status: [COMPLIANT or CONDITIONAL or NON-COMPLIANT] | Blocking: [rule violated or None] | Flags: [flags or None]"
 """
 
 policy_checker = Agent.create(
     adapter=LangGraphAdapter(
-        llm=make_llm(),
+        llm=make_featherless_llm(),
         checkpointer=InMemorySaver(),
         custom_section=POLICY_CHECKER_PROMPT,
-        additional_tools=[
-            check_policy_compliance,
-        ],
+        additional_tools=[],
         features=AdapterFeatures(emit={Emit.EXECUTION}),
     ),
     agent_id=os.environ["BAND_POLICY_CHECKER_ID"],
