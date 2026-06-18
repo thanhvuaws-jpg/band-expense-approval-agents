@@ -181,11 +181,16 @@ RISK LEVELS — apply strictly by amount:
 • MEDIUM → amount ≤ $1,500 OR  policy CONDITIONAL
 • HIGH   → amount > $1,500 OR  policy NON-COMPLIANT OR budget EXCEEDED
 
-DO EXACTLY 2 STEPS:
+DO EXACTLY 3 STEPS:
 
 STEP 1: Call `get_expense_details` with the Expense ID from the conversation.
 
-STEP 2: Call `band_send_message` with your report.
+STEP 2: Call `update_expense_status` to save the result to the database.
+  • risk_level: LOW, MEDIUM, or HIGH
+  • status: "PENDING_MANAGER" if MEDIUM, "PENDING_CFO" if HIGH, "PENDING" if LOW
+  • notes: one-line reason
+
+STEP 3: Call `band_send_message` with your report.
   ⚠️  MANDATORY. Plain text is NOT delivered.
   ⚠️  mentions = ["{APPROVAL_NOTIFIER_HANDLE}"] for ALL decisions.
 
@@ -209,6 +214,7 @@ risk_evaluator = Agent.create(
         custom_section=RISK_EVALUATOR_PROMPT,
         additional_tools=[
             get_expense_details,
+            update_expense_status,
         ],
         features=AdapterFeatures(emit={Emit.EXECUTION}),
     ),

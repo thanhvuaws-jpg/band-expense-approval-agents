@@ -582,16 +582,27 @@ async function loadHistory() {
 const agentMeta = {
   'budget-checker':    { label: 'Budget Checker',    cls: 'av-budget',   icon: '💰' },
   'policychecker':     { label: 'Policy Checker',    cls: 'av-policy',   icon: '📋' },
+  'policy-checker':    { label: 'Policy Checker',    cls: 'av-policy',   icon: '📋' },
   'risk-evaluator':    { label: 'Risk Evaluator',    cls: 'av-risk',     icon: '⚠️' },
   'approval-notifier': { label: 'Approval Notifier', cls: 'av-approval', icon: '✅' },
 };
-function agentInfo(sender) {
-  if (!sender) return { label: 'System', cls: 'av-system', icon: '⚙️' };
-  const handle = (sender.handle || sender.name || '').toLowerCase().replace(/\s/g,'-');
+function agentInfo(agentKey) {
+  const k = (agentKey || '').toLowerCase();
   for (const [key, val] of Object.entries(agentMeta)) {
-    if (handle.includes(key) || (sender.name||'').toLowerCase().includes(key.replace('-',' '))) return val;
+    if (k.includes(key)) return val;
   }
-  return { label: sender.name || sender.handle || 'User', cls: 'av-user', icon: '👤' };
+  return { label: agentKey || 'System', cls: 'av-system', icon: '⚙️' };
+}
+function actionColor(action) {
+  if (!action) return '#64748b';
+  const a = action.toUpperCase();
+  if (a.includes('APPROVED') || a.includes('APPROVE')) return '#059669';
+  if (a.includes('REJECTED') || a.includes('REJECT'))  return '#dc2626';
+  if (a.includes('HIGH'))    return '#dc2626';
+  if (a.includes('MEDIUM'))  return '#b45309';
+  if (a.includes('LOW'))     return '#059669';
+  if (a.includes('CREATED')) return '#4f46e5';
+  return '#475569';
 }
 
 async function loadFeed() {
@@ -603,25 +614,26 @@ async function loadFeed() {
     const ts   = document.getElementById('feed-ts');
     ts.textContent = 'Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
 
-    if (d.error) { body.innerHTML = `<div class="feed-empty">${d.error}</div>`; return; }
     if (!d.messages || d.messages.length === 0) {
       cnt.textContent = '';
-      body.innerHTML = '<div class="feed-empty">Chưa có tin nhắn nào trong room</div>';
+      body.innerHTML = '<div class="feed-empty">Chưa có hoạt động nào. Gửi thử một expense request!</div>';
       return;
     }
     cnt.textContent = '(' + d.messages.length + ')';
     const wasAtBottom = body.scrollHeight - body.scrollTop <= body.clientHeight + 50;
     body.innerHTML = d.messages.map(m => {
-      const sender = m.sender || m.author || {};
-      const info = agentInfo(sender);
-      const content = (m.content || m.text || m.body || '').trim();
-      const time = m.created_at || m.timestamp || m.created || '';
+      const info    = agentInfo(m.agent);
+      const acolor  = actionColor(m.action);
+      const expInfo = m.amount ? ` · ${m.expense_id} · $${Number(m.amount).toLocaleString()} · ${m.department}` : (m.expense_id ? ` · ${m.expense_id}` : '');
       return `<div class="msg-item">
         <div class="msg-avatar ${info.cls}">${info.icon}</div>
         <div class="msg-body">
-          <div class="msg-sender">${info.label}</div>
-          <div class="msg-content">${content.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-          ${time ? `<div class="msg-time">${fmtDate(time)}</div>` : ''}
+          <div class="msg-sender">${info.label}<span style="font-weight:500;color:#94a3b8;margin-left:8px;font-size:0.7rem">${expInfo}</span></div>
+          <div class="msg-content">
+            <span style="background:#f1f5f9;padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;color:${acolor}">${m.action}</span>
+            ${m.details ? `<span style="margin-left:8px;color:#475569">${m.details.replace(/</g,'&lt;')}</span>` : ''}
+          </div>
+          <div class="msg-time">${fmtDate(m.timestamp)}</div>
         </div>
       </div>`;
     }).join('');
@@ -732,27 +744,16 @@ def api_history():
 
 @app.route("/api/band-messages")
 def api_band_messages():
-    key = os.environ.get("BAND_BUDGET_CHECKER_KEY", "")
-    if not key:
-        return jsonify(error="BAND_BUDGET_CHECKER_KEY not configured", messages=[])
-    rooms = _get_rooms()
-    if not rooms:
-        return jsonify(error="Không tìm thấy Band room nào", messages=[])
-    all_messages = []
-    headers = {"X-API-Key": key}
-    try:
-        with httpx.Client(headers=headers, timeout=10) as client:
-            for room_id in rooms[:1]:  # only first room
-                r = client.get(f"{BAND_BASE}/chats/{room_id}/messages")
-                if r.is_success:
-                    data = r.json()
-                    msgs = data.get("data", data.get("messages", []))
-                    all_messages.extend(msgs)
-    except Exception as e:
-        return jsonify(error=f"Band API error: {str(e)}", messages=[])
-    # newest last
-    all_messages = all_messages[-60:]
-    return jsonify(messages=all_messages)
+    with db._conn() as conn:
+        rows = conn.execute("""
+            SELECT a.expense_id, a.agent, a.action, a.details, a.timestamp,
+                   e.requester, e.amount, e.department
+            FROM audit_log a
+            LEFT JOIN expenses e ON a.expense_id = e.id
+            ORDER BY a.id DESC LIMIT 80
+        """).fetchall()
+    msgs = list(reversed([dict(r) for r in rows]))
+    return jsonify(messages=msgs)
 
 
 @app.route("/api/budgets")
