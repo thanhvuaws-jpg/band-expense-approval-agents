@@ -17,11 +17,18 @@ services:
       - db_data:/data
     environment:
       - DB_PATH=/data/database.db
-    ports:
-      - "5000:5000"
     restart: unless-stopped
     depends_on:
       - agents
+
+  tunnel-web:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --url http://web:5000
+    environment:
+      - TUNNEL_TRANSPORT_PROTOCOL=http2
+    restart: unless-stopped
+    depends_on:
+      - web
 
 volumes:
   db_data:
